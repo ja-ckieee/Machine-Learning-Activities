@@ -6,29 +6,35 @@
 
 ###################################################################################
 
+import os
 import numpy as np
 import matplotlib.pylab as plt
+import PIL.Image
 from tkinter import *
-from tkinter import filedialog
-import os
+from tkinter.filedialog import askopenfile
+
 
 srcPoints = []
 
-# reads input image
+# fetch and read input image
 def imageReader():
-    global imgInput, imgH, imgW, dim, cid
-    media = filedialog.askopenfile(mode='r', filetypes=[('PNG', '*.png'), ('JPG', '*.jpg'), ('JPEG', '*.jpeg')])
+    global imgInput, imgH, imgW, dim, fig
+    media = askopenfile(mode='r', filetypes=[('PNG', '*.png'), ('JPG', '*.jpg'), ('JPEG', '*.jpeg')])
     if media:
         btnUpload.config(state='disabled')
         path = os.path.abspath(media.name)
-        imgInput = plt.imread(path)
+        imgInput = np.asarray(PIL.Image.open(path))
         imgH, imgW, dim = imgInput.shape
-        cid = (plt.imshow(imgInput)).figure.canvas.mpl_connect('button_press_event', selectPoints)
-        plt.show()
-        np.array(srcPoints)
+    fig = plt.figure(figsize=(10, 7),dpi=100)
+    fig.add_subplot(1, 2, 1)
+    plt.imshow(imgInput).figure.canvas.mpl_connect('button_press_event', selectPoints)
+    plt.axis('off')
+    plt.title("Original Image")
+    plt.show()
 
 #mark points from mouse click and store them in an array
 def selectPoints(event):
+    np.array(srcPoints)
     if len(srcPoints) != 4:
         srcPoints.append([event.xdata, event.ydata])
         plt.plot(event.xdata, event.ydata, 'o')
@@ -36,7 +42,7 @@ def selectPoints(event):
         (plt.imshow(imgInput)).figure.canvas.mpl_disconnect(cid)
     (plt.imshow(imgInput)).figure.canvas.draw()
 
-#arrange the points from top left -> top right -> bottom left -> bottom right
+#re-arrange the points from top left -> top right -> bottom left -> bottom right
 def sortPoints(coordinates):
     coordinates.sort(key = lambda x: x[1])
     top = [coordinates[0],coordinates[1]]
@@ -77,7 +83,7 @@ def homography():
     # Homogeneous Linear Least Squares using SVD
     [u, s, vh] = np.linalg.svd(A)
     # get smallest singular value from vh, this is the coefficient of the homography
-    H = vh[-1, :] /vh[-1, -1]
+    H = vh[-1, :] / vh[-1, -1]
     # reshaping the coefficient to H
     H = np.reshape(H,(3,3))
     
@@ -95,9 +101,12 @@ def toAffine():
             if (projX >= 0 and projX < imgW) and (projY >= 0 and projY < imgH):
                 affineOut[projY][projX] = imgInput[y][x]
 
-    f, axarr = plt.subplots(1,2)
-    axarr[0].imshow(imgInput)
-    axarr[1].imshow(affineOut.astype('uint8'))
+    fig.add_subplot(1, 2, 2)
+    
+    plt.imshow(affineOut.astype('uint8'))
+    plt.axis('off')
+    plt.title("Affine")
+    plt.show()
 
     plt.show()
 
