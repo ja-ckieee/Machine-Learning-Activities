@@ -39,7 +39,7 @@ def selectPoints(event):
         srcPoints.append([event.xdata, event.ydata])
         plt.plot(event.xdata, event.ydata, 'o')
     else:
-        (plt.imshow(imgInput)).figure.canvas.mpl_disconnect(cid)
+        (plt.imshow(imgInput)).figure.canvas.mpl_disconnect()
     (plt.imshow(imgInput)).figure.canvas.draw()
 
 #re-arrange the points from top left -> top right -> bottom left -> bottom right
@@ -77,9 +77,6 @@ def homography():
         A[i*2, :] = [corX, corY, 1, 0, 0, 0, -desX*corX, -desX*corY, -desX]
         A[i*2+1, :] = [0, 0, 0, corX, corY, 1, -desY*corX, -desY*corY, -desY]
 
-        #A[i*2, :] = [desX, desY, 1, 0, 0, 0, -corX*desX, -corX*desY, -corX]
-        #A[i*2+1, :] = [0, 0, 0, desX, desY, 1, -corY*desX, -corY*desY, -corY]
-
     # Homogeneous Linear Least Squares using SVD
     [u, s, vh] = np.linalg.svd(A)
     # get smallest singular value from vh, this is the coefficient of the homography
@@ -91,7 +88,6 @@ def homography():
 
 # linear mapping to correct distortion
 def toAffine():
-    plt.close()
     H = homography()
     affineOut = np.zeros((imgH, imgW, dim))
     for y in range(affineOut.shape[0]):
@@ -106,8 +102,6 @@ def toAffine():
     plt.imshow(affineOut.astype('uint8'))
     plt.axis('off')
     plt.title("Affine")
-    plt.show()
-
     plt.show()
 
 def Close():
