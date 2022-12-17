@@ -16,7 +16,7 @@ from tkinter.filedialog import askopenfile
 
 srcPoints = []
 
-# fetch and read input image
+# fetch, read, and display input image
 def imageReader():
     global imgInput, imgH, imgW, dim, fig
     media = askopenfile(mode='r', filetypes=[('PNG', '*.png'), ('JPG', '*.jpg'), ('JPEG', '*.jpeg')])
